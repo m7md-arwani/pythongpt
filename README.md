@@ -40,6 +40,11 @@ This project is an interactive exam platform that allows users to take exams wit
     ```bash
     pip install rasa
     ```
+2. **Train RASA**
+
+    ```bash
+    rasa train
+    ```
 
 
 
