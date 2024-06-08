@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Create New Exam{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Create New Exam</h1>
+    <form id="add-exam-form" method="POST" action="/add_exam" class="form-container">
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        <div class="form-group">
+            <label for="description">Description:</label>
+            <input type="text" id="description" name="description" required>
+        </div>
+        <div class="form-group">
+            <label for="initial_prompt">Initial Prompt:</label>
+            <input type="text" id="initial_prompt" name="initial_prompt" required>
+        </div>
+        <div id="questions" class="form-group">
+            <div class="question-group">
+                <label for="questions">Question 1:</label>
+                <input type="text" name="questions[]" required>
+                <label for="answers">Answer 1:</label>
+                <input type="text" name="answers[]" required>
+            </div>
+        </div>
+        <button type="button" id="add-question" class="add-question-button">Add another question</button>
+        <br>
+        <input type="submit" value="Add Exam" class="submit-button">
+    </form>
+</div>
+
+<style>
+    .container {
+        text-align: center;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+        background-color: white;
+        color: #333;
+    }
+
+    h1 {
+        font-size: 2.5em;
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    .form-container {
+        display: inline-block;
+        text-align: left;
+        max-width: 500px;
+        width: 100%;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 5px;
+        color: #555;
+    }
+
+    input[type="text"] {
+        width: calc(100% - 22px);
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 1em;
+    }
+
+    .add-question-button,
+    .submit-button {
+        background-color: #333;
+        color: white;
+        padding: 10px 20px;
+        font-size: 1em;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        margin-top: 10px;
+    }
+
+    .add-question-button:hover,
+    .submit-button:hover {
+        background-color: #555;
+    }
+
+    .question-group {
+        margin-bottom: 10px;
+    }
+</style>
+
+<script>
+    document.getElementById('add-question').addEventListener('click', function() {
+        var questionCount = document.querySelectorAll('#questions input[name="questions[]"]').length + 1;
+        var questionDiv = document.createElement('div');
+        questionDiv.classList.add('question-group');
+        questionDiv.innerHTML = '<label for="questions">Question ' + questionCount + ':</label>' +
+            '<input type="text" name="questions[]" required>' +
+            '<label for="answers">Answer ' + questionCount + ':</label>' +
+            '<input type="text" name="answers[]" required>';
+        document.getElementById('questions').appendChild(questionDiv);
+    });
+</script>
+{% endblock %}
