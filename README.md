@@ -61,3 +61,7 @@ This project is an interactive exam platform that allows users to take exams wit
     ```
 ## Demo Video
 
+You can watch the demo video by downloading and opening the file below:
+
+[Download Demo Video](./demo_vid.mkv)
+
