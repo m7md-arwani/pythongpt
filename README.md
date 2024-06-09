@@ -8,8 +8,6 @@ This project is an interactive exam platform that allows users to take exams wit
 - [Technologies Used](#technologies-used)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Project Structure](#project-structure)
-- [License](#license)
 
 ## Features
 
