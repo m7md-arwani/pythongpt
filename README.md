@@ -8,6 +8,7 @@ This project is an interactive exam platform that allows users to take exams wit
 - [Technologies Used](#technologies-used)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Demo Video](#demo-video)
 
 ## Features
 
@@ -58,3 +59,5 @@ This project is an interactive exam platform that allows users to take exams wit
     ```bash
     py app.py
     ```
+## Demo Video
+
