@@ -1,6 +1,6 @@
 # Interactive Exam with Llama3 LLM
 
-This project is an interactive exam platform that allows users to take exams with the assistance of a chatbot powered by LLama3. The chatbot can help users with questions during the exam. The project is built using Flask for the backend and Llama3 for the chatbot functionality.
+This project is an interactive exam platform that allows users to take exams with the assistance of a chatbot powered by LLama3. Which is an open-source LLM supported by Meta. The chatbot can help users with questions during the exam. The project is built using Flask for the backend and Llama3 for the chatbot functionality.
 
 ## Table of Contents
 
