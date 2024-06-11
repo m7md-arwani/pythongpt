@@ -1,6 +1,6 @@
-# Interactive Exam with Rasa Chatbot
+# Interactive Exam with Llama3 LLM
 
-This project is an interactive exam platform that allows users to take exams with the assistance of a chatbot powered by Rasa. The chatbot can help users with questions during the exam. The project is built using Flask for the backend and Rasa for the chatbot functionality.
+This project is an interactive exam platform that allows users to take exams with the assistance of a chatbot powered by LLama3. The chatbot can help users with questions during the exam. The project is built using Flask for the backend and Llama3 for the chatbot functionality.
 
 ## Table of Contents
 
@@ -14,14 +14,14 @@ This project is an interactive exam platform that allows users to take exams wit
 
 - Interactive exam interface
 - Chatbot assistance during the exam
-- Seamless integration between Flask and Rasa
+- Seamless integration between Flask and Llama3
 - Maintains conversation history during the exam
 
 ## Technologies Used
 
 - Python
 - Flask
-- Rasa
+- Llama3 (locally)
 - HTML/CSS/JavaScript
 
 ## Installation
@@ -30,29 +30,26 @@ This project is an interactive exam platform that allows users to take exams wit
 
 - Python 3.7 or higher
 - pip (Python package installer)
-- Rasa
+- Llama3
 
 ### Setup
 
-1. **Install Rasa:**
+1. **Install Llama3:**
 
-    ```bash
-    pip install rasa
+  https://ollama.com/download
+
+2. **Run Llama3 for the first time (will take some time):**
+   ```bash
+    ollama run llama3
     ```
-2. **Train RASA**
-
-    ```bash
-    rasa train
-    ```
-
-
+   Shut down the program after it finishes.
 
 ## Usage
 
-1. **Run the Rasa Server**
+1. **Run the Ollama Server**
 
     ```bash
-    rasa shell
+    ollama serve
     ```
 2. **Run the flask project**
 
@@ -60,7 +57,7 @@ This project is an interactive exam platform that allows users to take exams wit
     py app.py
     ```
 ## Demo Video
-
+The Video assumes you have installed Ollama
 You can watch the demo video by downloading and opening the file below:
 
 [Download Demo Video](./demo_vid.mkv)
