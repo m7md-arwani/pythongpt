@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+
+{% block title %}Take Exam - Interactive Exam{% endblock %}
+
+{% block content %}
+<div class="exam-container">
+    <h2>{{ exam.name }}</h2>
+    <p>{{ exam.description }}</p>
+    <p>Question <span id="current-question-number">1</span> of {{ questions | length }}</p>
+
+    <div id="question-container" class="question-container">
+        <div id="question-text" class="question-text"></div>
+    </div>
+
+    <div class="chatbot-container">
+        <h3>Interactive Chatbot</h3>
+        <div id="chatbox" class="chatbox">
+            <!-- Chat messages will appear here -->
+        </div>
+        <input type="text" id="chat-input" placeholder="Type your message here..." class="chat-input">
+        <button id="send-message" class="chat-button">Send</button>
+    </div>
+
+    <div class="answer-container">
+        <textarea id="final-answer" placeholder="Enter your answer here..." class="answer-textarea"></textarea>
+    </div>
+
+    <div class="button-container">
+        <button id="prev-question" class="nav-button" style="display: none;">Previous</button>
+        <button id="next-question" class="nav-button" style="display: none;">Next</button>
+        <button id="submit-exam" class="submit-button" style="display: none;">Submit Exam</button>
+    </div>
+</div>
+
+<style>
+    .exam-container {
+        text-align: center;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+        background-color: #f9f9f9;
+        color: #333;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        max-width: 600px;
+        margin: 20px auto;
+    }
+
+    h2 {
+        font-size: 2em;
+        margin-bottom: 10px;
+        color: #333;
+    }
+
+    p {
+        margin-bottom: 10px;
+        color: #555;
+    }
+
+    .question-container {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: white;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    .question-text {
+        font-size: 1.2em;
+    }
+
+    .chatbot-container {
+        margin-top: 20px;
+        text-align: center;
+    }
+
+    .chatbox {
+        border: 1px solid #ccc;
+        padding: 10px;
+        width: 80%;
+        margin: 0 auto;
+        height: 200px;
+        overflow-y: auto;
+        background-color: white;
+        border-radius: 5px;
+    }
+
+    .chat-input {
+        width: 80%;
+        margin-top: 10px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 1em;
+    }
+
+    .chat-button {
+        background-color: #333;
+        color: white;
+        padding: 10px 20px;
+        font-size: 1em;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        margin-top: 10px;
+    }
+
+    .chat-button:hover {
+        background-color: #555;
+    }
+
+    .answer-container {
+        margin-top: 20px;
+    }
+
+    .answer-textarea {
+        width: 80%;
+        height: 100px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 1em;
+    }
+
+    .button-container {
+        margin-top: 20px;
+    }
+
+    .nav-button, .submit-button {
+        background-color: #333;
+        color: white;
+        padding: 10px 20px;
+        font-size: 1em;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        margin: 5px;
+    }
+
+    .nav-button:hover, .submit-button:hover {
+        background-color: #555;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const questions = JSON.parse('{{ questions | tojson | safe }}');
+    let currentQuestionIndex = 0;
+
+    function displayQuestion(index) {
+        const question = questions[index];
+        document.getElementById('question-text').textContent = question.question_text;
+        document.getElementById('current-question-number').textContent = index + 1;
+    }
+
+    function updateButtons() {
+        document.getElementById('prev-question').style.display = currentQuestionIndex > 0 ? 'inline-block' : 'none';
+        document.getElementById('next-question').style.display = currentQuestionIndex < questions.length - 1 ? 'inline-block' : 'none';
+        document.getElementById('submit-exam').style.display = currentQuestionIndex === questions.length - 1 ? 'inline-block' : 'none';
+    }
+
+    document.getElementById('prev-question').addEventListener('click', function() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            displayQuestion(currentQuestionIndex);
+            updateButtons();
+        }
+    });
+
+    document.getElementById('next-question').addEventListener('click', function() {
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            displayQuestion(currentQuestionIndex);
+            updateButtons();
+        }
+    });
+
+    document.getElementById('submit-exam').addEventListener('click', function() {
+        const finalAnswer = document.getElementById('final-answer').value;
+        fetch('{{ url_for('views.submit_exam', session_id=session_id) }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                final_answer: finalAnswer,
+                questions: questions.map(q => ({ id: q.id, answer: finalAnswer }))
+            })
+        }).then(response => {
+            if (response.ok) {
+                alert('Exam submitted successfully!');
+                window.location.href = '/';
+            } else {
+                alert('Failed to submit the exam.');
+            }
+        });
+    });
+
+    function sendMessage(message) {
+        const chatbox = document.getElementById('chatbox');
+        const userMessage = document.createElement('div');
+        userMessage.textContent = 'You: ' + message;
+        chatbox.appendChild(userMessage);
+
+        fetch('/api/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ prompt: message }) // Send the user input as 'prompt' in the request payload
+        })
+        .then(response => response.json())
+        .then(data => {
+            const botMessage = document.createElement('div');
+            botMessage.textContent = 'Bot: ' + data.message.content;
+            chatbox.appendChild(botMessage);
+            chatbox.scrollTop = chatbox.scrollHeight;
+        })
+        .catch(error => {
+            console.error('Error sending message:', error);
+        });
+    }
+
+
+
+document.getElementById('send-message').addEventListener('click', function() {
+        const chatInput = document.getElementById('chat-input');
+        const message = chatInput.value;
+        if (message.trim() !== '') {
+            sendMessage(message);
+            chatInput.value = '';
+        }
+    });
+
+    // Initialize the first question
+    displayQuestion(currentQuestionIndex);
+    updateButtons();
+});
+</script>
+{% endblock %}

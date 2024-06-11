@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}Start Exam - Interactive Exam{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>{{ exam.name }}</h1>
+    <p>{{ exam.description }}</p>
+    <button id="generate-session-button" class="generate-session-button">Generate Session</button>
+    <div id="session-link" class="session-link" style="display: none;">
+        <p>Session link: <a href="#" id="session-url" target="_blank"></a></p>
+        <input type="text" id="session-url-copy" readonly style="width: 300px;" class="session-url-copy">
+        <button onclick="copyToClipboard()" class="copy-button">Copy Link</button>
+    </div>
+</div>
+
+<style>
+    .container {
+        text-align: center;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+        background-color: white;
+        color: #333;
+    }
+
+    h1 {
+        font-size: 2.5em;
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    p {
+        margin-bottom: 20px;
+        color: #555;
+    }
+
+    .generate-session-button {
+        background-color: #333;
+        color: white;
+        padding: 10px 20px;
+        font-size: 1em;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .generate-session-button:hover {
+        background-color: #555;
+    }
+
+    .session-link {
+        margin-top: 20px;
+    }
+
+    .session-url-copy {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 1em;
+    }
+
+    .copy-button {
+        background-color: #333;
+        color: white;
+        padding: 10px 20px;
+        font-size: 1em;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .copy-button:hover {
+        background-color: #555;
+    }
+</style>
+
+<script>
+document.getElementById('generate-session-button').addEventListener('click', function() {
+    fetch('/generate_session/{{ exam.id }}')
+    .then(response => response.json())
+    .then(data => {
+        const sessionUrl = `${window.location.origin}/take_exam/${data.session_id}`;
+        document.getElementById('session-url').href = sessionUrl;
+        document.getElementById('session-url').textContent = sessionUrl;
+        document.getElementById('session-url-copy').value = sessionUrl;
+        document.getElementById('session-link').style.display = 'block';
+    });
+});
+
+function copyToClipboard() {
+    const copyText = document.getElementById('session-url-copy');
+    copyText.select();
+    copyText.setSelectionRange(0, 99999); // For mobile devices
+    document.execCommand('copy');
+}
+</script>
+{% endblock %}
