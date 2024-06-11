@@ -67,7 +67,7 @@ This project is an interactive exam platform that allows users to take exams wit
     ```
 ## Demo Video
 The Video assumes you have installed Ollama
-You can watch the demo video by downloading and opening the file below:
 
-[Download Demo Video](./demo_vid.mkv)
+[Watch the Demo Video](https://youtu.be/zP0V6YDwfeE)
+
 
