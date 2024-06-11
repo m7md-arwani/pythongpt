@@ -44,6 +44,15 @@ This project is an interactive exam platform that allows users to take exams wit
     ```
    Shut down the program after it finishes.
 
+3. **Install Flask**
+   ```bash
+    pip install flask
+    ```
+4. **Install flask_sqlalchemy**
+   ```bash
+    pip install flask_sqlalchemy
+    ```
+
 ## Usage
 
 1. **Run the Ollama Server**
