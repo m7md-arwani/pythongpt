@@ -36,7 +36,7 @@ This project is an interactive exam platform that allows users to take exams wit
 
 1. **Install Llama3:**
 
-  https://ollama.com/download
+    https://ollama.com/download
 
 2. **Run Llama3 for the first time (will take some time):**
    ```bash
