@@ -131,16 +131,37 @@ def submit_exam(session_id):
 
 server_url = 'http://localhost:11434/api/chat'
 
-conversation_history = [
-    {"role": "system", "content": "You are a helpful assistant."}
-]
+conversation_history = {}
+
+def initialize_conversation(session_id):
+    session = Session.query.get(session_id)
+    if not session:
+        return
+
+    exam = Exam.query.get(session.exam_id)
+    if not exam:
+        return
+
+    conversation_history = [
+        {"role": "system", "content": exam.initial_prompt}
+    ]
+
+    questions = Question.query.filter_by(exam_id=exam.id).all()
+    for question in questions:
+        conversation_history.append({"role": "system", "content": question.question_text + " the answer -> " + question.answer})
+
+    return conversation_history
 
 @views.route('/api/chat', methods=['POST'])
 def chat():
     global conversation_history  # Ensure we can modify the global variable inside the function
 
     data = request.json
+    session_id = data.get("session_id")
     prompt = data.get("prompt")
+
+    if session_id and not conversation_history:
+        conversation_history = initialize_conversation(session_id)
 
     # Append the user's message to the conversation history
     conversation_history.append({"role": "user", "content": prompt})

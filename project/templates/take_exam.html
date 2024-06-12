@@ -205,36 +205,48 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    function sendMessage(message) {
-        const chatbox = document.getElementById('chatbox');
-        const userMessage = document.createElement('div');
-        userMessage.textContent = 'You: ' + message;
-        userMessage.style.color = '#4CAF50';
-        userMessage.style.marginBottom = '10px';
-        userMessage.style.textAlign = 'left';
-        chatbox.appendChild(userMessage);
+    let session_id = '{{ session_id }}'; // Ensure session_id is available in your template
 
-        fetch('/api/chat', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ prompt: message }) // Send the user input as 'prompt' in the request payload
-        })
-        .then(response => response.json())
-        .then(data => {
-            const botMessage = document.createElement('div');
-            botMessage.textContent = 'Bot: ' + data.message.content;
-            botMessage.style.color = '#333';
-            botMessage.style.marginBottom = '10px';
-            botMessage.style.textAlign = 'left';
-            chatbox.appendChild(botMessage);
-            chatbox.scrollTop = chatbox.scrollHeight;
-        })
-        .catch(error => {
-            console.error('Error sending message:', error);
-        });
+function sendMessage(message) {
+    const chatbox = document.getElementById('chatbox');
+    const userMessage = document.createElement('div');
+    userMessage.textContent = 'You: ' + message;
+    userMessage.style.color = '#4CAF50';
+    userMessage.style.marginBottom = '10px';
+    userMessage.style.textAlign = 'left';
+    chatbox.appendChild(userMessage);
+
+    fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ session_id: session_id, prompt: message }) // Include session_id in the request payload
+    })
+    .then(response => response.json())
+    .then(data => {
+        const botMessage = document.createElement('div');
+        botMessage.textContent = 'Bot: ' + data.message.content;
+        botMessage.style.color = '#333';
+        botMessage.style.marginBottom = '10px';
+        botMessage.style.textAlign = 'left';
+        chatbox.appendChild(botMessage);
+        chatbox.scrollTop = chatbox.scrollHeight;
+    })
+    .catch(error => {
+        console.error('Error sending message:', error);
+    });
+}
+
+document.getElementById('send-message').addEventListener('click', function() {
+    const chatInput = document.getElementById('chat-input');
+    const message = chatInput.value;
+    if (message.trim() !== '') {
+        sendMessage(message);
+        chatInput.value = '';
     }
+});
+
 
     document.getElementById('send-message').addEventListener('click', function() {
         const chatInput = document.getElementById('chat-input');
