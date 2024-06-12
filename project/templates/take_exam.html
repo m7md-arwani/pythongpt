@@ -17,8 +17,10 @@
         <div id="chatbox" class="chatbox">
             <!-- Chat messages will appear here -->
         </div>
-        <input type="text" id="chat-input" placeholder="Type your message here..." class="chat-input">
-        <button id="send-message" class="chat-button">Send</button>
+        <div class="chat-input-container">
+            <input type="text" id="chat-input" placeholder="Type your message here..." class="chat-input">
+            <button id="send-message" class="chat-button">Send</button>
+        </div>
     </div>
 
     <div class="answer-container">
@@ -82,15 +84,22 @@
         overflow-y: auto;
         background-color: white;
         border-radius: 5px;
+        margin-bottom: 10px;
+    }
+
+    .chat-input-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
     .chat-input {
-        width: 80%;
-        margin-top: 10px;
+        width: 70%;
         padding: 10px;
         border: 1px solid #ccc;
         border-radius: 5px;
         font-size: 1em;
+        margin-right: 10px;
     }
 
     .chat-button {
@@ -102,7 +111,6 @@
         border-radius: 5px;
         cursor: pointer;
         transition: background-color 0.3s ease;
-        margin-top: 10px;
     }
 
     .chat-button:hover {
@@ -201,6 +209,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const chatbox = document.getElementById('chatbox');
         const userMessage = document.createElement('div');
         userMessage.textContent = 'You: ' + message;
+        userMessage.style.color = '#4CAF50';
+        userMessage.style.marginBottom = '10px';
+        userMessage.style.textAlign = 'left';
         chatbox.appendChild(userMessage);
 
         fetch('/api/chat', {
@@ -214,6 +225,9 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             const botMessage = document.createElement('div');
             botMessage.textContent = 'Bot: ' + data.message.content;
+            botMessage.style.color = '#333';
+            botMessage.style.marginBottom = '10px';
+            botMessage.style.textAlign = 'left';
             chatbox.appendChild(botMessage);
             chatbox.scrollTop = chatbox.scrollHeight;
         })
@@ -222,9 +236,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-
-
-document.getElementById('send-message').addEventListener('click', function() {
+    document.getElementById('send-message').addEventListener('click', function() {
         const chatInput = document.getElementById('chat-input');
         const message = chatInput.value;
         if (message.trim() !== '') {
