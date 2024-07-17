@@ -2,9 +2,8 @@ import uuid
 import requests
 import json
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify
-from .models import Exam,Question, Session, Answer
+from .models import Exam, Question, Session, Answer
 from . import db
-
 
 views = Blueprint('views', __name__)
 
@@ -98,6 +97,9 @@ def generate_session(exam_id):
     new_session = Session(id=session_id, exam_id=exam_id)
     db.session.add(new_session)
     db.session.commit()
+
+    initialize_conversation(session_id)  # Initialize the conversation with the initial prompt
+
     return jsonify({'session_id': session_id})
 
 
@@ -128,10 +130,10 @@ def submit_exam(session_id):
     db.session.commit()
     return jsonify({"message": "Exam submitted successfully!"}), 200
 
-
 server_url = 'http://localhost:11434/api/chat'
 
-conversation_history = {}
+# Initialize conversation_history as a dictionary of lists
+conversation_histories = {}
 
 def initialize_conversation(session_id):
     session = Session.query.get(session_id)
@@ -146,22 +148,40 @@ def initialize_conversation(session_id):
         {"role": "system", "content": exam.initial_prompt}
     ]
 
-    questions = Question.query.filter_by(exam_id=exam.id).all()
-    for question in questions:
-        conversation_history.append({"role": "system", "content": question.question_text + " the answer -> " + question.answer})
+    payload = {
+        "model": "llama3",
+        "messages": conversation_history  # Send the entire conversation history
+    }
 
-    return conversation_history
+    # Make an HTTP POST request to the server URL
+    response = requests.post(server_url, json=payload)
+
+    # Process the server response
+    response_parts = response.text.strip().split("\n")
+    combined_messages = ""
+    for response_part in response_parts:
+        response_data = json.loads(response_part)
+        if "message" in response_data:
+            message_content = response_data["message"]["content"]
+            combined_messages += message_content.strip() + " "
+
+    # Append the assistant's response to the conversation history
+    conversation_history.append({"role": "assistant", "content": combined_messages.strip()})
+
+    # Store the conversation history in the dictionary
+    conversation_histories[session_id] = conversation_history
 
 @views.route('/api/chat', methods=['POST'])
 def chat():
-    global conversation_history  # Ensure we can modify the global variable inside the function
-
     data = request.json
     session_id = data.get("session_id")
     prompt = data.get("prompt")
 
-    if session_id and not conversation_history:
-        conversation_history = initialize_conversation(session_id)
+    # Ensure conversation_history for this session_id exists
+    if session_id not in conversation_histories:
+        return jsonify({"error": "Session not found."}), 404
+
+    conversation_history = conversation_histories[session_id]
 
     # Append the user's message to the conversation history
     conversation_history.append({"role": "user", "content": prompt})
@@ -186,28 +206,8 @@ def chat():
     # Append the assistant's response to the conversation history
     conversation_history.append({"role": "assistant", "content": combined_messages.strip()})
 
+    # Update the conversation history in the dictionary
+    conversation_histories[session_id] = conversation_history
+
     # Return the combined messages
     return jsonify({"message": {"role": "assistant", "content": combined_messages.strip()}})
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
