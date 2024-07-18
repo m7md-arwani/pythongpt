@@ -116,16 +116,18 @@ def take_exam(session_id):
 @views.route('/submit_exam/<session_id>', methods=['POST'])
 def submit_exam(session_id):
     data = request.json
-    final_answer = data.get('final_answer')
-    question_answers = data.get('questions')
+    question_answers = data.get('questions', [])
 
     for qa in question_answers:
-        answer = Answer(
-            session_id=session_id,
-            question_id=qa['id'],
-            answer_text=final_answer
-        )
-        db.session.add(answer)
+        question_id = qa.get('id')
+        answer_text = qa.get('answer')
+        if question_id and answer_text:
+            answer = Answer(
+                session_id=session_id,
+                question_id=question_id,
+                answer_text=answer_text
+            )
+            db.session.add(answer)
 
     db.session.commit()
     return jsonify({"message": "Exam submitted successfully!"}), 200
