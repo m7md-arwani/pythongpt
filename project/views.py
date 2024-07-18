@@ -4,6 +4,9 @@ import json
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify
 from .models import Exam, Question, Session, Answer
 from . import db
+import os
+from fpdf import FPDF
+from flask import send_file
 
 views = Blueprint('views', __name__)
 
@@ -130,7 +133,7 @@ def submit_exam(session_id):
             db.session.add(answer)
 
     db.session.commit()
-    return jsonify({"message": "Exam submitted successfully!"}), 200
+    return redirect(url_for('views.generate_report', session_id=session_id))
 
 server_url = 'http://localhost:11434/api/chat'
 
@@ -213,3 +216,53 @@ def chat():
 
     # Return the combined messages
     return jsonify({"message": {"role": "assistant", "content": combined_messages.strip()}})
+
+
+@views.route('/generate_report/<session_id>', methods=['GET'])
+def generate_report(session_id):
+    session = Session.query.get_or_404(session_id)
+    exam = Exam.query.get(session.exam_id)
+    answers = Answer.query.filter_by(session_id=session_id).all()
+    conversation_log = conversation_histories.get(session_id, [])
+
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+
+    pdf.cell(200, 10, txt=f"Exam Report for {exam.name}", ln=True, align='C')
+    pdf.cell(200, 10, txt=f"Description: {exam.description}", ln=True, align='C')
+    pdf.cell(200, 10, txt="Conversation Log:", ln=True, align='L')
+    pdf.ln(10)
+
+    for message in conversation_log:
+        role = message.get("role")
+        content = message.get("content")
+        pdf.multi_cell(0, 10, txt=f"{role.capitalize()}: {content}")
+
+    pdf.ln(10)
+    pdf.cell(200, 10, txt="Answers:", ln=True, align='L')
+    pdf.ln(10)
+
+    for answer in answers:
+        question = Question.query.get(answer.question_id)
+        pdf.multi_cell(0, 10, txt=f"Q: {question.question_text}")
+        pdf.multi_cell(0, 10, txt=f"A: {answer.answer_text}")
+        pdf.ln(5)
+
+    # Save the PDF to a file
+    reports_dir = os.path.join(os.getcwd(), 'reports')
+    if not os.path.exists(reports_dir):
+        os.makedirs(reports_dir)
+    pdf_filename = os.path.join(reports_dir, f"report_{session_id}.pdf")
+    pdf.output(pdf_filename)
+
+    return f"Report generated and saved successfully for session ID: {session_id}."
+
+@views.route('/view_report/<session_id>', methods=['GET'])
+def view_report(session_id):
+    reports_dir = os.path.join(os.getcwd(), 'reports')
+    pdf_filename = os.path.join(reports_dir, f"report_{session_id}.pdf")
+    if os.path.exists(pdf_filename):
+        return send_file(pdf_filename, as_attachment=True)
+    else:
+        return "Report not found.", 404
