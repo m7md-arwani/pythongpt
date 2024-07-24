@@ -1,0 +1,13 @@
+<!-- templates/list_reports.html -->
+{% extends "base.html" %}
+
+{% block title %}Available Reports{% endblock %}
+
+{% block content %}
+    <h1>Available Reports</h1>
+    <ul class="report-list">
+        {% for report in report_files %}
+            <li><a href="{{ url_for('views.get_report', filename=report) }}">{{ report }}</a></li>
+        {% endfor %}
+    </ul>
+{% endblock %}

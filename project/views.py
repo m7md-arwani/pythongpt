@@ -7,6 +7,7 @@ from . import db
 import os
 from fpdf import FPDF
 from flask import send_file
+from flask import send_from_directory
 
 views = Blueprint('views', __name__)
 
@@ -266,3 +267,16 @@ def view_report(session_id):
         return send_file(pdf_filename, as_attachment=True)
     else:
         return "Report not found.", 404
+
+
+@views.route('/reports')
+def list_reports():
+    reports_dir = 'reports'
+    report_files = [f for f in os.listdir(reports_dir) if f.endswith('.pdf')]
+    return render_template('list_reports.html', report_files=report_files)
+
+
+@views.route('/reports/<filename>')
+def get_report(filename):
+    reports_dir = os.path.join(os.getcwd(), 'reports')
+    return send_from_directory(reports_dir, filename)
