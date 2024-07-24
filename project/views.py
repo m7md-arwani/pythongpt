@@ -155,7 +155,7 @@ def initialize_conversation(session_id):
     ]
 
     payload = {
-        "model": "llama3",
+        "model": "llama3.1",
         "messages": conversation_history  # Send the entire conversation history
     }
 
@@ -193,7 +193,7 @@ def chat():
     conversation_history.append({"role": "user", "content": prompt})
 
     payload = {
-        "model": "llama3",
+        "model": "llama3.1",
         "messages": conversation_history  # Send the entire conversation history
     }
 
