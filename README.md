@@ -1,6 +1,6 @@
-# Interactive Exam with Llama3 LLM
+# Interactive Exam with Llama3.1:8B LLM
 
-This project is an interactive exam platform that allows users to take exams with the assistance of a chatbot powered by LLama3. Which is an open-source LLM supported by Meta. The chatbot can help users with questions during the exam. The project is built using Flask for the backend and Llama3 for the chatbot functionality.
+This project is an interactive exam platform that allows users to take exams with the assistance of a chatbot powered by LLama3.1:8B. Which is an open-source LLM supported by Meta. The chatbot can help users with questions during the exam. The project is built using Flask for the backend and Llama3.1 for the chatbot functionality.
 
 ## Table of Contents
 
@@ -14,14 +14,14 @@ This project is an interactive exam platform that allows users to take exams wit
 
 - Interactive exam interface
 - Chatbot assistance during the exam
-- Seamless integration between Flask and Llama3
+- Seamless integration between Flask and Llama3.1:8B
 - Maintains conversation history during the exam
 
 ## Technologies Used
 
 - Python
 - Flask
-- Llama3 (locally)
+- Llama3.1:8B (locally)
 - HTML/CSS/JavaScript
 
 ## Installation
@@ -30,17 +30,17 @@ This project is an interactive exam platform that allows users to take exams wit
 
 - Python 3.7 or higher
 - pip (Python package installer)
-- Llama3
+- Llama3.1:8B
 
 ### Setup
 
-1. **Install Llama3:**
+1. **Install Ollama Software:**
 
     https://ollama.com/download
 
-2. **Run Llama3 for the first time (will take some time):**
+2. **Run Llama3.1:8B for the first time (will take some time):**
    ```bash
-    ollama run llama3
+    ollama run llama3.1
     ```
    Shut down the program after it finishes.
 
