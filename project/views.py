@@ -228,27 +228,45 @@ def generate_report(session_id):
 
     pdf = FPDF()
     pdf.add_page()
+    pdf.set_left_margin(10)
+    pdf.set_right_margin(10)
     pdf.set_font("Arial", size=12)
 
-    pdf.cell(200, 10, txt=f"Exam Report for {exam.name}", ln=True, align='C')
-    pdf.cell(200, 10, txt=f"Description: {exam.description}", ln=True, align='C')
-    pdf.cell(200, 10, txt="Conversation Log:", ln=True, align='L')
+    # Header
+    pdf.cell(0, 10, txt=f"Exam Report for {exam.name}", ln=True, align='C')
+    pdf.ln(5)
+    pdf.cell(0, 10, txt=f"Description: {exam.description}", ln=True, align='L')
     pdf.ln(10)
+
+    # Conversation Log Section
+    pdf.set_font("Arial", style='B', size=12)
+    pdf.cell(0, 10, txt="Conversation Log:", ln=True, align='L')
+    pdf.set_font("Arial", size=12)
+    pdf.ln(5)
 
     for message in conversation_log:
-        role = message.get("role")
-        content = message.get("content")
-        pdf.multi_cell(0, 10, txt=f"{role.capitalize()}: {content}")
+        role = message.get("role", "").capitalize()
+        content = message.get("content", "")
+
+        # Wrap long content
+        role = (role[:50] + '...') if len(role) > 50 else role
+        content = (content[:500] + '...') if len(content) > 500 else content
+
+        pdf.multi_cell(0, 10, txt=f"{role}: {content}", align='L')
+        pdf.ln(2)  # Add space between entries
 
     pdf.ln(10)
-    pdf.cell(200, 10, txt="Answers:", ln=True, align='L')
-    pdf.ln(10)
+
+    # Answers Section
+    pdf.set_font("Arial", style='B', size=12)
+    pdf.cell(0, 10, txt="Answers:", ln=True, align='L')
+    pdf.set_font("Arial", size=12)
+    pdf.ln(5)
 
     for answer in answers:
-        question = Question.query.get(answer.question_id)
-        pdf.multi_cell(0, 10, txt=f"Q: {question.question_text}")
-        pdf.multi_cell(0, 10, txt=f"A: {answer.answer_text}")
-        pdf.ln(5)
+        answer_text = (answer.answer_text[:500] + '...') if len(answer.answer_text) > 500 else answer.answer_text
+        pdf.multi_cell(0, 10, txt=f"A: {answer_text}", align='L')
+        pdf.ln(2)  # Add space between answers
 
     # Save the PDF to a file
     reports_dir = os.path.join(os.getcwd(), 'reports')
@@ -258,6 +276,8 @@ def generate_report(session_id):
     pdf.output(pdf_filename)
 
     return f"Report generated and saved successfully for session ID: {session_id}."
+
+
 
 @views.route('/view_report/<session_id>', methods=['GET'])
 def view_report(session_id):
