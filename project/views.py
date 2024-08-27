@@ -279,14 +279,7 @@ def generate_report(session_id):
 
 
 
-@views.route('/view_report/<session_id>', methods=['GET'])
-def view_report(session_id):
-    reports_dir = os.path.join(os.getcwd(), 'reports')
-    pdf_filename = os.path.join(reports_dir, f"report_{session_id}.pdf")
-    if os.path.exists(pdf_filename):
-        return send_file(pdf_filename, as_attachment=True)
-    else:
-        return "Report not found.", 404
+
 
 
 @views.route('/reports')
