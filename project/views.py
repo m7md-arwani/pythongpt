@@ -71,29 +71,37 @@ def update_exam(exam_id):
     exam.initial_prompt = request.form['initial_prompt']
 
     # Update existing questions
-    for question_id, question_data in request.form.getlist('questions'):
+    existing_questions = request.form.getlist('questions')
+    for question_data in existing_questions:
+        question_id = list(question_data.keys())[0]
         question = Question.query.get(question_id)
         if question:
-            question.question_text = question_data['text']
-            question.answer = question_data['answer']
+            question_text = question_data['text']
+            answer = question_data['answer']
+            question.question_text = question_text
+            question.answer = answer
 
     # Add new questions
-    for question_data in request.form.getlist('new_questions'):
+    new_question_texts = request.form.getlist('new_questions[][text]')
+    new_answers = request.form.getlist('new_questions[][answer]')
+    for question_text, answer in zip(new_question_texts, new_answers):
         new_question = Question(
             exam_id=exam.id,
-            question_text=question_data['text'],
-            answer=question_data['answer']
+            question_text=question_text,
+            answer=answer
         )
         db.session.add(new_question)
 
     # Delete questions
-    for question_id in request.form.getlist('delete_questions'):
+    delete_question_ids = request.form.getlist('delete_questions[]')
+    for question_id in delete_question_ids:
         question = Question.query.get(question_id)
         if question:
             db.session.delete(question)
 
     db.session.commit()
     return redirect(url_for('views.main'))
+
 
 @views.route('/generate_session/<int:exam_id>', methods=['GET'])
 def generate_session(exam_id):
@@ -126,6 +134,7 @@ def submit_exam(session_id):
         question_id = qa.get('id')
         answer_text = qa.get('answer')
         if question_id and answer_text:
+            # Ensure the answer is linked to the correct question
             answer = Answer(
                 session_id=session_id,
                 question_id=question_id,
@@ -135,6 +144,7 @@ def submit_exam(session_id):
 
     db.session.commit()
     return redirect(url_for('views.generate_report', session_id=session_id))
+
 
 server_url = 'http://localhost:11434/api/chat'
 
@@ -150,8 +160,14 @@ def initialize_conversation(session_id):
     if not exam:
         return
 
+    # Collect questions and answers
+    questions = Question.query.filter_by(exam_id=exam.id).all()
+    exam_context = " ".join([f"Question: {q.question_text} Answer: {q.answer}." for q in questions])
+
+    # Initial system prompt with exam context
     conversation_history = [
-        {"role": "system", "content": exam.initial_prompt}
+        {"role": "system", "content": exam.initial_prompt},
+        {"role": "system", "content": exam_context}
     ]
 
     payload = {
@@ -176,6 +192,7 @@ def initialize_conversation(session_id):
 
     # Store the conversation history in the dictionary
     conversation_histories[session_id] = conversation_history
+
 
 @views.route('/api/chat', methods=['POST'])
 def chat():
@@ -293,3 +310,33 @@ def list_reports():
 def get_report(filename):
     reports_dir = os.path.join(os.getcwd(), 'reports')
     return send_from_directory(reports_dir, filename)
+
+@views.route('/notify_chatbot/<session_id>', methods=['POST'])
+def notify_chatbot(session_id):
+    # Logic to notify the chatbot
+    try:
+        notification_message = "Student has moved to the next question, prompt him with the new question now"
+
+        # Fetch the conversation history for the session
+        conversation_history = conversation_histories.get(session_id, [])
+
+        # Append the notification message
+        conversation_history.append({"role": "system", "content": notification_message})
+
+        # Send the conversation history to the chatbot
+        payload = {
+            "model": "llama3.1",
+            "messages": conversation_history
+        }
+
+        response = requests.post(server_url, json=payload)
+        print(response)
+        response_data = response.json()
+
+        # Update the conversation history with the chatbot's response
+        conversation_history.append({"role": "assistant", "content": response_data["message"]["content"]})
+        conversation_histories[session_id] = conversation_history
+
+        return jsonify({"success": True, "message": "Notification sent."})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})

@@ -155,6 +155,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const questions = JSON.parse('{{ questions | tojson | safe }}');
     let currentQuestionIndex = 0;
+    let answers = {};  // Store answers mapped to question IDs
 
     function displayQuestion(index) {
         const question = questions[index];
@@ -177,24 +178,30 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     document.getElementById('next-question').addEventListener('click', function() {
+        saveCurrentAnswer();
         if (currentQuestionIndex < questions.length - 1) {
             currentQuestionIndex++;
             displayQuestion(currentQuestionIndex);
             updateButtons();
+            notifyBot()
         }
     });
 
     document.getElementById('submit-exam').addEventListener('click', function() {
-        const finalAnswer = document.getElementById('final-answer').value;
+        saveCurrentAnswer();
+
+        // Prepare the data to be sent to the backend
+        const questionAnswers = Object.keys(answers).map(questionId => ({
+            id: questionId,
+            answer: answers[questionId]
+        }));
+
         fetch('{{ url_for('views.submit_exam', session_id=session_id) }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                final_answer: finalAnswer,
-                questions: questions.map(q => ({ id: q.id, answer: finalAnswer }))
-            })
+            body: JSON.stringify({ questions: questionAnswers })
         }).then(response => {
             if (response.ok) {
                 alert('Exam submitted successfully!');
@@ -204,6 +211,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Save the current answer in the answers object
+    function saveCurrentAnswer() {
+        const currentAnswer = document.getElementById('final-answer').value;
+        const currentQuestion = questions[currentQuestionIndex];
+        answers[currentQuestion.id] = currentAnswer;
+    }
 
     let session_id = '{{ session_id }}'; // Ensure session_id is available in your template
 
@@ -235,6 +249,18 @@ function sendMessage(message) {
     })
     .catch(error => {
         console.error('Error sending message:', error);
+    });
+}
+function notifyBot() {
+    fetch(`/notify_chatbot/${session_id}`, {  // Update this line
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }).then(response => {
+        if (!response.ok) {
+            console.error('Failed to notify the bot.');
+        }
     });
 }
 
